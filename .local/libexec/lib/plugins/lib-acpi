@@ -48,7 +48,7 @@ declare -r ACPI_VERSION="2.1.0"
 # Load foundation (required) from same directory
 # Load lib-common (required) - look in same directory structure
 _ACPI_COMMON_FOUND=false
-_ACPI_SCRIPT_DIR="${%):-%x}:A:h}"
+_ACPI_SCRIPT_DIR="${${(%):-%x}:A:h}"
 
 # Try core directory first, then plugins
 for _ACPI_COMMON_PATH in \
@@ -72,7 +72,7 @@ unset _ACPI_COMMON_FOUND _ACPI_COMMON_PATH _ACPI_SCRIPT_DIR
 # Load infrastructure (optional with fallbacks) from same directory
 # Load lib-common (required) - look in same directory structure
 _ACPI_COMMON_FOUND=false
-_ACPI_SCRIPT_DIR="${%):-%x}:A:h}"
+_ACPI_SCRIPT_DIR="${${(%):-%x}:A:h}"
 
 # Try core directory first, then plugins
 for _ACPI_COMMON_PATH in \

@@ -118,7 +118,9 @@ declare -g XIDLEHOOK_STOP_TIMEOUT="${XIDLEHOOK_STOP_TIMEOUT:-5}"
 # ------------------------------
 
 # Current daemon PID
-declare -g _XIDLEHOOK_PID=# ------------------------------
+declare -g _XIDLEHOOK_PID=""
+
+# ------------------------------
 # Validation Functions
 # ------------------------------
 

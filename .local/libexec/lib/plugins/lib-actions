@@ -51,7 +51,7 @@ declare -g ACTIONS_LOADED=1
 # Load _common (required)
 # Load lib-common (required) - look in same directory structure
 _ACTIONS_COMMON_FOUND=false
-_ACTIONS_SCRIPT_DIR="${%):-%x}:A:h}"
+_ACTIONS_SCRIPT_DIR="${${(%):-%x}:A:h}"
 
 # Try core directory first, then plugins
 for _ACTIONS_COMMON_PATH in \

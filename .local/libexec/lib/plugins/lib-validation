@@ -46,7 +46,7 @@ declare -g VALIDATION_LOADED=1
 # Load _common (required) from same directory
 # Load lib-common (required) - look in same directory structure
 _VALIDATION_COMMON_FOUND=false
-_VALIDATION_SCRIPT_DIR="${%):-%x}:A:h}"
+_VALIDATION_SCRIPT_DIR="${${(%):-%x}:A:h}"
 
 # Try core directory first, then plugins
 for _VALIDATION_COMMON_PATH in \

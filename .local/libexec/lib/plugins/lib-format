@@ -184,7 +184,8 @@ format-lowercase() {
 format-titlecase() {
     local text="${1:?Text required}"
     local -a words=("${(@s: :)text}")
-    local result=for word in "${words[@]}"; do
+    local result=""
+    for word in "${words[@]}"; do
         local first="${word:0:1}"
         local rest="${word:1}"
         result+="${(U)first}${(L)rest} "
@@ -199,7 +200,8 @@ format-indent() {
     local levels="${2:-1}"
     local char="${3:-  }"
 
-    local indent=for ((i = 0; i < levels; i++)); do
+    local indent=""
+    for ((i = 0; i < levels; i++)); do
         indent+="$char"
     done
 
@@ -211,7 +213,8 @@ format-indent-lines() {
     local levels="${1:-1}"
     local char="${2:-  }"
 
-    local indent=for ((i = 0; i < levels; i++)); do
+    local indent=""
+    for ((i = 0; i < levels; i++)); do
         indent+="$char"
     done
 

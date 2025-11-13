@@ -556,7 +556,8 @@ jq-select-keys() {
     local first=1
     for key in $keys; do
         [[ $first -eq 0 ]] && key_array+=","
-        key_array+="\"$key\first=0
+        key_array+="\"$key\""
+        first=0
     done
     key_array+="]"
 
@@ -890,7 +891,7 @@ jq-uppercase() {
 # Trim whitespace
 # Usage: echo '"  text  "' | jq-trim
 jq-trim() {
-    jq-query 'gsub("^\\s+|\\s+$"; )'
+    jq-query 'gsub("^\\s+|\\s+$"; "")'
 }
 
 # Check if string contains substring
