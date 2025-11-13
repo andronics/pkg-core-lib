@@ -1,0 +1,78 @@
+# Example: Conditional Actions
+# Demonstrates conditional execution based on context variables
+
+schema: "action/v1"
+version: "1.0.0"
+
+metadata:
+  name: "conditional-docker-operations"
+  description: "Conditionally execute Docker operations based on environment"
+
+context:
+  environment: "production"  # Change to "development" or "staging"
+  enable_backups: "true"
+  prune_old_images: "false"
+
+actions:
+  # Always run: Inspect volumes
+  - id: "inspect_app_volume"
+    type: "docker.volume"
+    resource: "app_data"
+    action: "inspect"
+    store_result_as: "volume_info"
+
+  # Conditional: Only backup in production
+  - id: "backup_production_volume"
+    type: "docker.volume"
+    resource: "app_data"
+    action: "backup"
+    params:
+      backup_file: "~/.local/share/backups/app_data_prod.tar.gz"
+    conditions:
+      - expression: "{{ eq .environment \"production\" }}"
+        on_false: "skip"
+      - expression: "{{ eq .enable_backups \"true\" }}"
+        on_false: "skip"
+    depends_on:
+      - inspect_app_volume
+
+  # Conditional: Only in development - recreate volume
+  - id: "recreate_dev_volume"
+    type: "docker.volume"
+    resource: "app_data_dev"
+    action: "remove"
+    params:
+      force: true
+    conditions:
+      - expression: "{{ eq .environment \"development\" }}"
+        on_false: "skip"
+    on_error: "warn"
+
+  - id: "create_dev_volume"
+    type: "docker.volume"
+    resource: "app_data_dev"
+    action: "create"
+    params:
+      driver: "local"
+    conditions:
+      - expression: "{{ eq .environment \"development\" }}"
+        on_false: "skip"
+    depends_on:
+      - recreate_dev_volume
+
+  # Conditional: Prune old images if enabled
+  - id: "prune_images"
+    type: "docker.image"
+    resource: ""  # Not needed for prune
+    action: "prune"
+    params:
+      force: true
+    conditions:
+      - expression: "{{ eq .prune_old_images \"true\" }}"
+        on_false: "skip"
+
+config:
+  on_failure: "continue"  # Continue even if some actions fail
+
+rollback:
+  enabled: false

@@ -1,0 +1,86 @@
+# Example: Docker Volume Restore
+# Demonstrates restoring volumes from backups
+
+schema: "action/v1"
+version: "1.0.0"
+
+metadata:
+  name: "docker-volume-restore"
+  description: "Restore Docker volumes from backup archives"
+
+context:
+  backup_dir: "~/.local/share/docker-backups"
+  backup_date: "2025-11-09"
+
+actions:
+  # Ensure containers are stopped before restore
+  - id: "stop_postgres_container"
+    type: "docker.container"
+    resource: "app_postgres"
+    action: "stop"
+    params:
+      timeout: 60
+    on_error: "warn"  # Ignore if already stopped
+
+  - id: "stop_app_container"
+    type: "docker.container"
+    resource: "app_web"
+    action: "stop"
+    params:
+      timeout: 30
+    on_error: "warn"
+
+  # Restore postgres volume
+  - id: "restore_postgres_volume"
+    type: "docker.volume"
+    resource: "postgres_data"
+    action: "restore"
+    params:
+      backup_file: "{{ .backup_dir }}/postgres_data_{{ .backup_date }}.tar.gz"
+    depends_on:
+      - stop_postgres_container
+
+  # Restore application uploads
+  - id: "restore_uploads_volume"
+    type: "docker.volume"
+    resource: "app_uploads"
+    action: "restore"
+    params:
+      backup_file: "{{ .backup_dir }}/uploads_{{ .backup_date }}.tar.gz"
+    depends_on:
+      - stop_app_container
+
+  # Restart containers after restore
+  - id: "start_postgres_container"
+    type: "docker.container"
+    resource: "app_postgres"
+    action: "start"
+    depends_on:
+      - restore_postgres_volume
+
+  - id: "start_app_container"
+    type: "docker.container"
+    resource: "app_web"
+    action: "start"
+    depends_on:
+      - start_postgres_container
+      - restore_uploads_volume
+
+config:
+  on_failure: "stop"
+
+rollback:
+  enabled: true
+  actions:
+    # Ensure containers are started even if restore fails
+    - id: "rollback_start_postgres"
+      type: "docker.container"
+      resource: "app_postgres"
+      action: "start"
+      on_error: "ignore"
+
+    - id: "rollback_start_app"
+      type: "docker.container"
+      resource: "app_web"
+      action: "start"
+      on_error: "ignore"

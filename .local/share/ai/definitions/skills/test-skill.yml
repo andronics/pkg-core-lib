@@ -1,0 +1,34 @@
+schema: "ai-definition/v1"
+type: "skill"
+name: "test-skill"
+version: "1.0.0"
+description: "Test skill for end-to-end AI library testing"
+skill:
+  triggers:
+    keywords:
+      - "test"
+      - "example"
+      - "demo"
+  scope:
+    tools:
+      - "Read"
+      - "Write"
+      - "Bash"
+  preferences:
+    model: "sonnet"
+  instructions: |
+    This is a test skill for validating the AI library implementation.
+
+    When activated, this skill demonstrates:
+    - YAML definition parsing
+    - Template rendering with Mustache syntax
+    - Artifact generation and caching
+    - Claude Code integration
+
+    Use this skill to verify that the complete pipeline works correctly.
+  examples:
+    - "Can you test the functionality?"
+    - "Show me an example of how this works"
+  limitations: |
+    This is a test skill and should not be used in production.
+    It serves only as a validation tool for the AI library system.

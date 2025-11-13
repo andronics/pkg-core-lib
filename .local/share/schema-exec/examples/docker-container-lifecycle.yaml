@@ -1,0 +1,112 @@
+# Example: Docker Container Lifecycle Management
+# Demonstrates container operations with dependency ordering
+
+schema: "action/v1"
+version: "1.0.0"
+
+metadata:
+  name: "docker-container-lifecycle"
+  description: "Stop, backup volumes, restart containers with proper ordering"
+
+context:
+  container_prefix: "myapp"
+  backup_dir: "~/.local/share/docker-backups/containers"
+
+actions:
+  # Step 1: Stop application containers (in dependency order)
+  - id: "stop_web"
+    type: "docker.container"
+    resource: "{{ .container_prefix }}_web"
+    action: "stop"
+    params:
+      timeout: 30
+    on_error: "warn"  # Continue even if already stopped
+
+  - id: "stop_api"
+    type: "docker.container"
+    resource: "{{ .container_prefix }}_api"
+    action: "stop"
+    params:
+      timeout: 30
+    depends_on:
+      - stop_web
+    on_error: "warn"
+
+  - id: "stop_database"
+    type: "docker.container"
+    resource: "{{ .container_prefix }}_postgres"
+    action: "stop"
+    params:
+      timeout: 60  # Longer timeout for database
+    depends_on:
+      - stop_api
+    on_error: "warn"
+
+  # Step 2: Backup volumes (can run in parallel)
+  - id: "backup_db_volume"
+    type: "docker.volume"
+    resource: "{{ .container_prefix }}_postgres_data"
+    action: "backup"
+    params:
+      backup_file: "{{ .backup_dir }}/postgres_data_latest.tar.gz"
+    depends_on:
+      - stop_database
+    store_result_as: "db_backup_path"
+
+  - id: "backup_uploads_volume"
+    type: "docker.volume"
+    resource: "{{ .container_prefix }}_uploads"
+    action: "backup"
+    params:
+      backup_file: "{{ .backup_dir }}/uploads_latest.tar.gz"
+    depends_on:
+      - stop_web
+    store_result_as: "uploads_backup_path"
+
+  # Step 3: Restart containers (in reverse dependency order)
+  - id: "start_database"
+    type: "docker.container"
+    resource: "{{ .container_prefix }}_postgres"
+    action: "start"
+    depends_on:
+      - backup_db_volume
+
+  - id: "start_api"
+    type: "docker.container"
+    resource: "{{ .container_prefix }}_api"
+    action: "start"
+    depends_on:
+      - start_database
+
+  - id: "start_web"
+    type: "docker.container"
+    resource: "{{ .container_prefix }}_web"
+    action: "start"
+    depends_on:
+      - start_api
+      - backup_uploads_volume
+
+config:
+  on_failure: "stop"
+
+# Rollback: Ensure containers are started even if backup fails
+rollback:
+  enabled: true
+  actions:
+    - id: "rollback_start_db"
+      type: "docker.container"
+      resource: "{{ .container_prefix }}_postgres"
+      action: "start"
+      on_error: "ignore"
+
+    - id: "rollback_start_api"
+      type: "docker.container"
+      resource: "{{ .container_prefix }}_api"
+      action: "start"
+      on_error: "ignore"
+
+    - id: "rollback_start_web"
+      type: "docker.container"
+      resource: "{{ .container_prefix }}_web"
+      action: "start"
+      on_error: "ignore"

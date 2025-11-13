@@ -1,0 +1,89 @@
+name: docker
+version: 1.0.0
+description: Docker resource management plugin for schema-driven actions
+author: andronics
+
+# Plugin type
+type: resource
+
+# Supported resource types and actions
+resources:
+  - name: volume
+    description: Docker volume operations
+    actions:
+      - create
+      - remove
+      - backup
+      - restore
+      - prune
+      - inspect
+
+  - name: container
+    description: Docker container operations
+    actions:
+      - start
+      - stop
+      - restart
+      - remove
+      - pause
+      - unpause
+      - inspect
+
+  - name: network
+    description: Docker network operations
+    actions:
+      - create
+      - remove
+      - connect
+      - disconnect
+      - inspect
+
+  - name: image
+    description: Docker image operations
+    actions:
+      - pull
+      - push
+      - remove
+      - build
+      - tag
+      - inspect
+
+# Dependencies (other plugins or system requirements)
+dependencies:
+  # No plugin dependencies
+
+system_requirements:
+  - docker
+  - jq
+
+# Optional dependencies (gracefully degraded)
+optional_dependencies:
+  - docker-compose
+  - restic  # For backup/restore operations
+
+# Configuration schema
+config:
+  backup_dir:
+    type: path
+    description: Directory for volume backups
+    default: ~/.local/share/docker-backups
+
+  restic_repo:
+    type: string
+    description: Restic repository for backups (optional)
+    required: false
+
+  prune_confirmation:
+    type: boolean
+    description: Require confirmation before pruning
+    default: true
+
+# Metadata
+tags:
+  - docker
+  - containers
+  - orchestration
+  - infrastructure
+
+homepage: https://github.com/andronics/dotfiles
+license: MIT

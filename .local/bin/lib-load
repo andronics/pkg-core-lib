@@ -1,0 +1,39 @@
+#!/usr/bin/env zsh
+# lib-load - Central library loader for pkgs lib extensions
+# Version: 1.0.0
+#
+# Usage:
+#   source lib-load        # Load the lib_load() function
+#   lib_load common log    # Load extensions
+
+# Get location relative to this script
+readonly LIB_LOADER_DIR="$(cd "$(dirname "$0")" && pwd)"
+readonly LIB_EXTENSIONS="${LIB_LOADER_DIR}/../libexec/lib"
+
+# Main loading function
+lib_load() {
+  local extensions=("$@")
+  local ext
+
+  for ext in "${extensions[@]}"; do
+    local plugin_file="${LIB_EXTENSIONS}/plugins/lib-${ext}"
+    local core_file="${LIB_EXTENSIONS}/core/lib-${ext}"
+
+    if [[ -f "${plugin_file}" ]]; then
+      source "${plugin_file}"
+    elif [[ -f "${core_file}" ]]; then
+      source "${core_file}"
+    else
+      echo "Error: lib extension '${ext}' not found" >&2
+      return 1
+    fi
+  done
+}
+
+# Execute if called directly (e.g., ./lib-load common log)
+if [[ "${ZSH_EVAL_CONTEXT:-}" == "toplevel" ]] || [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  lib_load "$@"
+fi
+
+# Make function available when sourced
+typeset -f lib_load >/dev/null 2>&1
