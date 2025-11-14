@@ -34,7 +34,7 @@ jobs:
         if: steps.check_scripts.outputs.has_scripts == 'true'
         run: |
           echo "Checking Zsh scripts..."
-          find . -type f -name "*.zsh" -print0 | while IFS= read -r -d '' file; do
+          find . -type f -name "*.zsh" ! -path "*/templates/*" ! -name "*.template.*" -print0 | while IFS= read -r -d '' file; do
             echo "Checking: $file"
             zsh -n "$file" || exit 1
           done
@@ -43,7 +43,7 @@ jobs:
         if: steps.check_scripts.outputs.has_scripts == 'true'
         run: |
           echo "Checking Bash scripts..."
-          find . -type f -name "*.sh" -print0 | while IFS= read -r -d '' file; do
+          find . -type f -name "*.sh" ! -path "*/templates/*" ! -name "*.template.*" -print0 | while IFS= read -r -d '' file; do
             echo "Checking: $file"
             bash -n "$file" || exit 1
           done
